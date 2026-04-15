@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🔥 Oracle AI Chat — Offline Database Assistant
 
 Chat with your Oracle database in plain English.  
@@ -149,3 +150,4 @@ export LD_LIBRARY_PATH=/opt/oracle/instantclient_21_x:$LD_LIBRARY_PATH
 - 🔄 Multi-turn conversation memory (last 3 exchanges)
 - 🗑️ Clear chat history button
 - ⚡ 100% offline — no internet required
+

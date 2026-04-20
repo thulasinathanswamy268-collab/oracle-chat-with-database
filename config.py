@@ -1,10 +1,13 @@
+import os
+
 # ─────────────────────────────────────────────
 #  ORACLE DATABASE CONFIGURATION
 # ─────────────────────────────────────────────
 
-ORACLE_USER     = "hr"       # e.g. "SCOTT"
-ORACLE_PASSWORD = "hr"       # e.g. "tiger"
-ORACLE_DSN      = "localhost:1521/xe" # host:port/service_name
+ORACLE_USER     = os.getenv("ORACLE_USER", "hr")
+ORACLE_PASSWORD = os.getenv("ORACLE_PASSWORD", "hr")
+ORACLE_DSN      = os.getenv("ORACLE_DSN", "localhost:1521/xe")
+ORACLE_INSTANT_CLIENT = os.getenv("ORACLE_INSTANT_CLIENT", None)
 # Examples:
 #   "localhost:1521/ORCL"
 #   "192.168.1.10:1521/XEPDB1"
@@ -15,8 +18,8 @@ ORACLE_DSN      = "localhost:1521/xe" # host:port/service_name
 #  OLLAMA CONFIGURATION
 # ─────────────────────────────────────────────
 
-OLLAMA_HOST  = "http://localhost:11434"  # Ollama default
-OLLAMA_MODEL = "llama3.2:1b"                # Model pulled in Ollama
+OLLAMA_HOST  = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:1b")
 
 
 # ─────────────────────────────────────────────
@@ -24,4 +27,4 @@ OLLAMA_MODEL = "llama3.2:1b"                # Model pulled in Ollama
 # ─────────────────────────────────────────────
 
 APP_HOST = "0.0.0.0"
-APP_PORT = 8000
+APP_PORT = int(os.getenv("PORT", 8000))

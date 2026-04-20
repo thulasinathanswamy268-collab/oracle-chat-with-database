@@ -1,5 +1,10 @@
 import oracledb
-oracledb.init_oracle_client("C:\\Users\\Thulasinathan\\Downloads\\instantclient-basic-windows.x64-23.26.1.0.0\\instantclient_23_0")  # Enable thick mode for Oracle 11g support
+import os
+from config import ORACLE_INSTANT_CLIENT
+
+# Initialize Oracle Instant Client if path is provided
+if ORACLE_INSTANT_CLIENT and os.path.exists(ORACLE_INSTANT_CLIENT):
+    oracledb.init_oracle_client(ORACLE_INSTANT_CLIENT)
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles

@@ -4,7 +4,7 @@ import os
 from config import MYSQL_DATABASE
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GROQ_MODEL = "llama3-8b-8192"
+GROQ_MODEL = "llama-3.1-8b-instant"        # ✅ Fixed model name
 
 
 def extract_sql(text: str) -> str:
@@ -30,7 +30,6 @@ def ask_ollama(user_question: str, schema: str, chat_history: list) -> dict:
     Returns dict with 'sql' and 'explanation'.
     """
 
-    # Limit schema to 1500 chars to avoid timeout
     schema_short = schema[:1500] if len(schema) > 1500 else schema
 
     system_prompt = f"""You are a MySQL SQL assistant.
@@ -55,7 +54,6 @@ EXPLANATION:
 <one line explanation>
 """
 
-    # Build messages with history (limit to last 4 messages)
     messages = [{"role": "system", "content": system_prompt}]
 
     for entry in chat_history[-4:]:
@@ -63,7 +61,7 @@ EXPLANATION:
 
     messages.append({"role": "user", "content": user_question})
 
-    try:
+    try:                                          # ✅ Correct indentation
         response = requests.post(
             "https://api.groq.com/openai/v1/chat/completions",
             headers={
@@ -76,12 +74,22 @@ EXPLANATION:
                 "temperature": 0.1,
                 "max_tokens": 300
             },
-            timeout=30  # Groq is fast, 30s is plenty
+            timeout=30
         )
-        response.raise_for_status()
+
+        if response.status_code != 200:
+            try:
+                error_detail = response.json()
+            except Exception:
+                error_detail = response.text
+            return {
+                "sql": "",
+                "explanation": "",
+                "error": f"❌ Groq {response.status_code}: {error_detail}"
+            }
+
         raw = response.json()["choices"][0]["message"]["content"]
 
-        # Parse SQL and explanation
         sql = ""
         explanation = ""
 
@@ -97,7 +105,7 @@ EXPLANATION:
 
         return {"sql": sql, "explanation": explanation, "raw": raw}
 
-    except requests.exceptions.ConnectionError:
+    except requests.exceptions.ConnectionError:   # ✅ Correct indentation
         return {
             "sql": "",
             "explanation": "",

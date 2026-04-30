@@ -1,4 +1,4 @@
-env/
+ORACLE_DSN=oracle-host.example.com:1521/XEPDB1env/
 __pycache__/
 .pytest_cache/
 *.pyc

@@ -1,13 +1,11 @@
-import oracledb
-from config import ORACLE_USER, ORACLE_PASSWORD, ORACLE_DSN
+import mysql.connector
+from config import MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_PORT, MYSQL_DATABASE
+
 
 def get_connection():
     """Create and return an Oracle DB connection."""
-    conn = oracledb.connect(
-        user=ORACLE_USER,
-        password=ORACLE_PASSWORD,
-        dsn=ORACLE_DSN
-    )
+    dsn = oracledb.makedsn(ORACLE_HOST, ORACLE_PORT, service_name=ORACLE_SERVICE)
+    conn = oracledb.connect(user=ORACLE_USER, password=ORACLE_PASSWORD, dsn=dsn)
     return conn
 
 
@@ -18,21 +16,15 @@ def get_schema_info():
 
     schema_text = ""
 
-    # Get all user tables
-    cursor.execute("""
-        SELECT table_name 
-        FROM user_tables 
-        ORDER BY table_name
-    """)
+    # Get all tables in the current user schema
+    cursor.execute("SELECT TABLE_NAME FROM USER_TABLES ORDER BY TABLE_NAME")
     tables = [row[0] for row in cursor.fetchall()]
 
     for table in tables:
-        cursor.execute(f"""
-            SELECT column_name, data_type, nullable
-            FROM user_tab_columns
-            WHERE table_name = '{table}'
-            ORDER BY column_id
-        """)
+        cursor.execute(
+            "SELECT COLUMN_NAME, DATA_TYPE FROM USER_TAB_COLUMNS WHERE TABLE_NAME = ? ORDER BY COLUMN_ID",
+            (table,)
+        )
         columns = cursor.fetchall()
         col_defs = ", ".join([f"{col[0]} ({col[1]})" for col in columns])
         schema_text += f"Table: {table}\n  Columns: {col_defs}\n\n"

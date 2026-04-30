@@ -1,6 +1,6 @@
 import requests
 import re
-from config import OLLAMA_HOST, OLLAMA_MODEL
+from config import OLLAMA_HOST, OLLAMA_MODEL, MYSQL_DATABASE
  
  
 def extract_sql(text: str) -> str:
@@ -31,16 +31,16 @@ def ask_ollama(user_question: str, schema: str, chat_history: list) -> dict:
     # ✅ Fix: Limit schema to 1500 chars to avoid timeout
     schema_short = schema[:1500] if len(schema) > 1500 else schema
  
-    system_prompt = f"""You are an Oracle SQL assistant.
-Oracle database schema:
+    system_prompt = f"""You are a MySQL SQL assistant.
+MySQL database schema:
  
 {schema_short}
  
 STRICT RULES:
 - ALWAYS return a SQL query.
 - When user says "show table X", write: SELECT * FROM X
-- When user says "show all tables", write: SELECT TABLE_NAME FROM USER_TABLES
-- Use Oracle syntax (ROWNUM not LIMIT).
+- When user says "show all tables", write: SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{MYSQL_DATABASE}'
+- Use MySQL syntax (LIMIT not ROWNUM).
 - Do NOT add semicolon at end of SQL.
 - Reply in this EXACT format only:
  

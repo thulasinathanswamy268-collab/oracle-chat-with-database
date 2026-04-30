@@ -1,17 +1,16 @@
 import os
 
 # ─────────────────────────────────────────────
-#  ORACLE DATABASE CONFIGURATION
+#  MYSQL DATABASE CONFIGURATION
 # ─────────────────────────────────────────────
 
-ORACLE_USER     = os.getenv("ORACLE_USER", "hr")
-ORACLE_PASSWORD = os.getenv("ORACLE_PASSWORD", "hr")
-ORACLE_DSN      = os.getenv("ORACLE_DSN", "localhost:1521/xe")
-ORACLE_INSTANT_CLIENT = os.getenv("ORACLE_INSTANT_CLIENT", None)
-# Examples:
-#   "localhost:1521/ORCL"
-#   "192.168.1.10:1521/XEPDB1"
-#   "myserver:1521/FREEPDB1"
+MYSQL_USER     = os.getenv("MYSQL_USER", "root")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "ITNBUfHUjIAfoVmZgmeSJVEJHvmYVRvD")
+MYSQL_HOST     = os.getenv("MYSQL_HOST", "shuttle.proxy.rlwy.net")
+MYSQL_PORT     = int(os.getenv("MYSQL_PORT", 3306))
+MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "railway")
+# Example MySQL connection:
+#   host=localhost, port=3306, database=mydb
 
 
 # ─────────────────────────────────────────────

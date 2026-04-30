@@ -1,32 +1,36 @@
-import oracledb
 import os
-from config import ORACLE_INSTANT_CLIENT
-
-# Initialize Oracle Instant Client if path is provided
-if ORACLE_INSTANT_CLIENT and os.path.exists(ORACLE_INSTANT_CLIENT):
-    oracledb.init_oracle_client(ORACLE_INSTANT_CLIENT)
-
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List
 import uvicorn
+from contextlib import asynccontextmanager
 
 from db import get_schema_info, run_query
 from ollama_client import ask_ollama
 from config import APP_HOST, APP_PORT
-
-app = FastAPI(title="Oracle AI Chat", version="1.0.0")
-
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ── In-memory schema cache ──
 _schema_cache = {"text": "", "tables": []}
 
 # ── In-memory chat history ──
 chat_history: List[dict] = []
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Load schema on startup."""
+    try:
+        schema_text, tables = get_schema_info()
+        _schema_cache["text"] = schema_text
+        _schema_cache["tables"] = tables
+        print(f"✅ Schema loaded: {len(tables)} tables found.")
+    except Exception as e:
+        print(f"⚠️  Could not load schema on startup: {e}")
+        print("   Make sure MySQL DB is running and config.py is set correctly.")
+    yield
+
+app = FastAPI(title="Oracle AI Chat", version="1.0.0", lifespan=lifespan)
 
 
 # ══════════════════════════════════════════════
@@ -41,23 +45,7 @@ class ExecuteRequest(BaseModel):
 
 
 # ══════════════════════════════════════════════
-#  STARTUP
-# ══════════════════════════════════════════════
 
-@app.on_event("startup")
-async def startup_event():
-    """Load schema on startup."""
-    try:
-        schema_text, tables = get_schema_info()
-        _schema_cache["text"] = schema_text
-        _schema_cache["tables"] = tables
-        print(f"✅ Schema loaded: {len(tables)} tables found.")
-    except Exception as e:
-        print(f"⚠️  Could not load schema on startup: {e}")
-        print("   Make sure Oracle DB is running and config.py is set correctly.")
-
-
-# ══════════════════════════════════════════════
 #  ROUTES
 # ══════════════════════════════════════════════
 
@@ -88,7 +76,7 @@ async def chat(req: ChatRequest):
     """
     Main chat endpoint:
     1. Send question + schema to Ollama → get SQL
-    2. Execute SQL on Oracle
+    2. Execute SQL on MySQL
     3. Return results
     """
     question = req.question.strip()
@@ -105,7 +93,7 @@ async def chat(req: ChatRequest):
         except Exception as e:
             return {
                 "question": question,
-                "error": f"Cannot connect to Oracle DB: {str(e)}",
+                "error": f"Cannot connect to MySQL DB: {str(e)}",
                 "sql": "",
                 "explanation": "",
                 "results": []
@@ -166,7 +154,7 @@ async def clear_history():
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "model": "llama3", "db": "oracle"}
+    return {"status": "ok", "model": "llama3", "db": "mysql"}
 
 
 # ══════════════════════════════════════════════

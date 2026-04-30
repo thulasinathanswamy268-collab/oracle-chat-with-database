@@ -3,27 +3,33 @@ from config import MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_PORT, MYSQL_DAT
 
 
 def get_connection():
-    """Create and return an Oracle DB connection."""
-    dsn = oracledb.makedsn(ORACLE_HOST, ORACLE_PORT, service_name=ORACLE_SERVICE)
-    conn = oracledb.connect(user=ORACLE_USER, password=ORACLE_PASSWORD, dsn=dsn)
+    """Create and return a MySQL connection."""
+    conn = mysql.connector.connect(
+        host=MYSQL_HOST,
+        port=int(MYSQL_PORT),
+        user=MYSQL_USER,
+        password=MYSQL_PASSWORD,
+        database=MYSQL_DATABASE
+    )
     return conn
 
 
 def get_schema_info():
-    """Fetch all table names and their columns from Oracle DB."""
+    """Fetch all table names and their columns from MySQL."""
     conn = get_connection()
     cursor = conn.cursor()
 
     schema_text = ""
 
-    # Get all tables in the current user schema
-    cursor.execute("SELECT TABLE_NAME FROM USER_TABLES ORDER BY TABLE_NAME")
+    # Get all tables in the current database
+    cursor.execute("SHOW TABLES")
     tables = [row[0] for row in cursor.fetchall()]
 
     for table in tables:
         cursor.execute(
-            "SELECT COLUMN_NAME, DATA_TYPE FROM USER_TAB_COLUMNS WHERE TABLE_NAME = ? ORDER BY COLUMN_ID",
-            (table,)
+            "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS "
+            "WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s ORDER BY ORDINAL_POSITION",
+            (MYSQL_DATABASE, table)
         )
         columns = cursor.fetchall()
         col_defs = ", ".join([f"{col[0]} ({col[1]})" for col in columns])
@@ -36,18 +42,14 @@ def get_schema_info():
 
 def clean_sql(sql: str) -> str:
     """Remove semicolons and markdown from SQL."""
-    # Remove markdown code block markers
     sql = sql.replace("```sql", "").replace("```", "")
-    # Take only first statement (before any semicolon)
     sql = sql.split(";")[0]
-    # Strip whitespace
     sql = sql.strip()
     return sql
 
 
 def run_query(sql: str):
     """Execute a SQL query and return results as list of dicts."""
-    # ✅ Clean SQL before executing
     sql = clean_sql(sql)
 
     if not sql:

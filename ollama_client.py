@@ -3,7 +3,7 @@ import re
 import os
 from config import MYSQL_DATABASE
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")  # ✅ Load API key from environment variable
 GROQ_MODEL = "llama-3.1-8b-instant"        # ✅ Fixed model name
 
 

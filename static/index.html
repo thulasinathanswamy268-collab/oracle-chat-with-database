@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title> Chat with database</title>
+  <title>QueryPrime · AI Database Chat</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0f1117;
-      color: #e2e8f0;
+      background: #0a0a0e;
+      color: #dde1e9;
       height: 100vh;
       display: flex;
       overflow: hidden;
@@ -19,8 +19,8 @@
     /* ── Sidebar ── */
     .sidebar {
       width: 280px;
-      background: #1a1d27;
-      border-right: 1px solid #2d3148;
+      background: linear-gradient(160deg, #131318 0%, #0e0e14 100%);
+      border-right: 1px solid #2a2a38;
       display: flex;
       flex-direction: column;
       padding: 20px;
@@ -33,37 +33,38 @@
       align-items: center;
       gap: 10px;
       padding-bottom: 16px;
-      border-bottom: 1px solid #2d3148;
+      border-bottom: 1px solid #2a2a38;
     }
 
     .logo-icon {
       width: 36px; height: 36px;
-      background: linear-gradient(135deg, #f97316, #ef4444);
+      background: linear-gradient(135deg, #c8cdd8, #8a90a0);
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
       font-size: 18px;
+      box-shadow: 0 2px 12px rgba(200,205,216,0.18);
     }
 
-    .logo h1 { font-size: 16px; font-weight: 700; color: #f1f5f9; }
-    .logo p  { font-size: 11px; color: #64748b; }
+    .logo h1 { font-size: 16px; font-weight: 700; color: #e8eaf0; letter-spacing: 0.03em; }
+    .logo p  { font-size: 11px; color: #5a5f72; }
 
     .sidebar-section h3 {
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: #64748b;
+      color: #5a5f72;
       margin-bottom: 8px;
     }
 
     #schemaBox {
-      background: #0f1117;
-      border: 1px solid #2d3148;
+      background: #0a0a0e;
+      border: 1px solid #2a2a38;
       border-radius: 8px;
       padding: 10px;
       font-size: 11px;
       font-family: 'Courier New', monospace;
-      color: #94a3b8;
+      color: #8a90a4;
       max-height: 280px;
       overflow-y: auto;
       white-space: pre-wrap;
@@ -71,7 +72,7 @@
     }
 
     #schemaBox::-webkit-scrollbar { width: 4px; }
-    #schemaBox::-webkit-scrollbar-thumb { background: #2d3148; border-radius: 4px; }
+    #schemaBox::-webkit-scrollbar-thumb { background: #2a2a38; border-radius: 4px; }
 
     .stat-row {
       display: flex;
@@ -80,34 +81,45 @@
 
     .stat {
       flex: 1;
-      background: #0f1117;
-      border: 1px solid #2d3148;
+      background: #0a0a0e;
+      border: 1px solid #2a2a38;
       border-radius: 8px;
       padding: 10px;
       text-align: center;
     }
 
-    .stat .val { font-size: 20px; font-weight: 700; color: #f97316; }
-    .stat .lbl { font-size: 10px; color: #64748b; margin-top: 2px; }
+    .stat .val {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #d4d8e4, #9aa0b4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat .lbl { font-size: 10px; color: #5a5f72; margin-top: 2px; }
 
     .btn-clear {
       width: 100%;
       padding: 9px;
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: #141419;
+      border: 1px solid #2a2a38;
       border-radius: 8px;
-      color: #94a3b8;
+      color: #8a90a4;
       font-size: 13px;
       cursor: pointer;
       transition: all 0.2s;
     }
-    .btn-clear:hover { background: #ef4444; color: white; border-color: #ef4444; }
+    .btn-clear:hover {
+      background: linear-gradient(135deg, #2a2a38, #1e1e28);
+      color: #c8cdd8;
+      border-color: #9aa0b4;
+    }
 
     .status-dot {
       display: inline-block;
       width: 8px; height: 8px;
       border-radius: 50%;
-      background: #22c55e;
+      background: #b0b8cc;
       margin-right: 6px;
       animation: pulse 2s infinite;
     }
@@ -127,23 +139,31 @@
 
     .topbar {
       padding: 16px 24px;
-      border-bottom: 1px solid #2d3148;
-      background: #1a1d27;
+      border-bottom: 1px solid #2a2a38;
+      background: linear-gradient(160deg, #131318 0%, #0e0e14 100%);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .topbar h2 { font-size: 15px; font-weight: 600; }
-    .topbar p  { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .topbar h2 {
+      font-size: 15px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #d4d8e4, #9aa0b4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 0.04em;
+    }
+    .topbar p  { font-size: 12px; color: #5a5f72; margin-top: 2px; }
 
     .badge {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: #131318;
+      border: 1px solid #2a2a38;
       border-radius: 20px;
       padding: 4px 12px;
       font-size: 12px;
-      color: #94a3b8;
+      color: #8a90a4;
     }
 
     /* ── Chat area ── */
@@ -157,16 +177,24 @@
     }
 
     #chatArea::-webkit-scrollbar { width: 6px; }
-    #chatArea::-webkit-scrollbar-thumb { background: #2d3148; border-radius: 4px; }
+    #chatArea::-webkit-scrollbar-thumb { background: #2a2a38; border-radius: 4px; }
 
     .welcome {
       text-align: center;
       padding: 60px 20px;
-      color: #64748b;
+      color: #5a5f72;
     }
 
     .welcome .icon { font-size: 48px; margin-bottom: 16px; }
-    .welcome h2 { font-size: 22px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px; }
+    .welcome h2 {
+      font-size: 22px;
+      font-weight: 700;
+      background: linear-gradient(120deg, #dde1ec, #9aa0b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
     .welcome p  { font-size: 14px; line-height: 1.6; max-width: 400px; margin: 0 auto 24px; }
 
     .suggestions {
@@ -177,20 +205,20 @@
     }
 
     .suggestion-btn {
-      background: #1a1d27;
-      border: 1px solid #2d3148;
+      background: #131318;
+      border: 1px solid #2a2a38;
       border-radius: 8px;
       padding: 8px 14px;
       font-size: 12px;
-      color: #94a3b8;
+      color: #8a90a4;
       cursor: pointer;
       transition: all 0.2s;
     }
 
     .suggestion-btn:hover {
-      border-color: #f97316;
-      color: #f97316;
-      background: #1e1812;
+      border-color: #9aa0b4;
+      color: #d4d8e4;
+      background: #1c1c24;
     }
 
     /* ── Message bubbles ── */
@@ -207,8 +235,8 @@
       flex-shrink: 0;
     }
 
-    .user .avatar  { background: linear-gradient(135deg, #3b82f6, #6366f1); }
-    .ai    .avatar { background: linear-gradient(135deg, #f97316, #ef4444); }
+    .user .avatar  { background: linear-gradient(135deg, #3a3f52, #5a607a); }
+    .ai    .avatar { background: linear-gradient(135deg, #c8cdd8, #8a90a0); }
 
     .bubble {
       max-width: 70%;
@@ -219,21 +247,22 @@
     }
 
     .user .bubble {
-      background: #1d4ed8;
-      color: #eff6ff;
+      background: linear-gradient(135deg, #1e2030, #252840);
+      color: #dde1ec;
+      border: 1px solid #3a3f55;
       border-bottom-right-radius: 4px;
     }
 
     .ai .bubble {
-      background: #1a1d27;
-      border: 1px solid #2d3148;
+      background: #131318;
+      border: 1px solid #2a2a38;
       border-bottom-left-radius: 4px;
     }
 
     /* SQL block inside bubble */
     .sql-block {
-      background: #0f1117;
-      border: 1px solid #2d3148;
+      background: #0a0a0e;
+      border: 1px solid #2a2a38;
       border-radius: 8px;
       margin: 10px 0;
       overflow: hidden;
@@ -244,31 +273,38 @@
       align-items: center;
       justify-content: space-between;
       padding: 8px 12px;
-      background: #1e293b;
-      border-bottom: 1px solid #2d3148;
+      background: #161620;
+      border-bottom: 1px solid #2a2a38;
       font-size: 11px;
-      color: #64748b;
+      color: #5a5f72;
     }
 
-    .sql-header .lang { color: #f97316; font-weight: 600; }
+    .sql-header .lang {
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      background: linear-gradient(90deg, #d4d8e4, #9aa0b4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
     .copy-btn {
       background: none;
       border: none;
-      color: #64748b;
+      color: #5a5f72;
       cursor: pointer;
       font-size: 12px;
       padding: 2px 6px;
       border-radius: 4px;
       transition: all 0.2s;
     }
-    .copy-btn:hover { background: #334155; color: #e2e8f0; }
+    .copy-btn:hover { background: #2a2a38; color: #c8cdd8; }
 
     .sql-code {
       padding: 12px;
       font-family: 'Courier New', monospace;
       font-size: 12px;
-      color: #7dd3fc;
+      color: #aab4cc;
       white-space: pre-wrap;
       overflow-x: auto;
     }
@@ -280,7 +316,7 @@
 
     .results-label {
       font-size: 11px;
-      color: #64748b;
+      color: #5a5f72;
       margin-bottom: 6px;
       display: flex;
       align-items: center;
@@ -288,17 +324,17 @@
     }
 
     .results-count {
-      background: #1e293b;
+      background: #161620;
       padding: 2px 8px;
       border-radius: 20px;
       font-size: 10px;
-      color: #94a3b8;
+      color: #8a90a4;
     }
 
     .table-wrap {
       overflow-x: auto;
       border-radius: 8px;
-      border: 1px solid #2d3148;
+      border: 1px solid #2a2a38;
     }
 
     table {
@@ -308,30 +344,30 @@
     }
 
     th {
-      background: #1e293b;
-      color: #94a3b8;
+      background: #161620;
+      color: #8a90a4;
       padding: 8px 12px;
       text-align: left;
       font-weight: 600;
       text-transform: uppercase;
       font-size: 10px;
       letter-spacing: 0.05em;
-      border-bottom: 1px solid #2d3148;
+      border-bottom: 1px solid #2a2a38;
     }
 
     td {
       padding: 8px 12px;
-      border-bottom: 1px solid #1e293b;
-      color: #e2e8f0;
+      border-bottom: 1px solid #161620;
+      color: #dde1e9;
     }
 
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #1a1d27; }
+    tr:hover td { background: #131318; }
 
     .error-msg {
-      color: #f87171;
-      background: #1f0e0e;
-      border: 1px solid #7f1d1d;
+      color: #c0788a;
+      background: #140e12;
+      border: 1px solid #4a2030;
       border-radius: 8px;
       padding: 10px 14px;
       font-size: 13px;
@@ -343,7 +379,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      color: #64748b;
+      color: #5a5f72;
       font-size: 13px;
       padding: 10px 0;
     }
@@ -352,7 +388,7 @@
       display: inline-block;
       width: 6px; height: 6px;
       border-radius: 50%;
-      background: #f97316;
+      background: linear-gradient(135deg, #c8cdd8, #8a90a0);
       animation: bounce 1.2s infinite;
     }
 
@@ -367,29 +403,29 @@
     /* ── Input area ── */
     .input-area {
       padding: 16px 24px;
-      border-top: 1px solid #2d3148;
-      background: #1a1d27;
+      border-top: 1px solid #2a2a38;
+      background: linear-gradient(160deg, #131318 0%, #0e0e14 100%);
     }
 
     .input-row {
       display: flex;
       gap: 10px;
       align-items: flex-end;
-      background: #0f1117;
-      border: 1px solid #2d3148;
+      background: #0a0a0e;
+      border: 1px solid #2a2a38;
       border-radius: 12px;
       padding: 10px 14px;
       transition: border-color 0.2s;
     }
 
-    .input-row:focus-within { border-color: #f97316; }
+    .input-row:focus-within { border-color: #9aa0b4; }
 
     #questionInput {
       flex: 1;
       background: transparent;
       border: none;
       outline: none;
-      color: #e2e8f0;
+      color: #dde1e9;
       font-size: 14px;
       resize: none;
       min-height: 24px;
@@ -398,14 +434,14 @@
       line-height: 1.5;
     }
 
-    #questionInput::placeholder { color: #475569; }
+    #questionInput::placeholder { color: #3a3f52; }
 
     .send-btn {
       width: 36px; height: 36px;
-      background: linear-gradient(135deg, #f97316, #ef4444);
+      background: linear-gradient(135deg, #c8cdd8, #8a90a0);
       border: none;
       border-radius: 8px;
-      color: white;
+      color: #0a0a0e;
       font-size: 16px;
       cursor: pointer;
       display: flex;
@@ -416,11 +452,11 @@
     }
 
     .send-btn:hover { opacity: 0.85; }
-    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
     .hint {
       font-size: 11px;
-      color: #475569;
+      color: #3a3f52;
       margin-top: 8px;
       text-align: center;
     }
@@ -431,9 +467,9 @@
 <!-- ══ SIDEBAR ══ -->
 <div class="sidebar">
   <div class="logo">
-    <div class="logo-icon">🔥</div>
+    <div class="logo-icon">🪙</div>
     <div>
-      <h1>Oracle AI Chat</h1>
+      <h1>QueryPrime AI</h1>
       <p>Powered by Ollama · llama3</p>
     </div>
   </div>
@@ -464,7 +500,7 @@
 <div class="main">
   <div class="topbar">
     <div>
-      <h2>Chat with your Oracle Database</h2>
+      <h2>QUERYPRIME · AI DATABASE CHAT</h2>
       <p>Ask anything in plain English — AI generates & runs SQL for you</p>
     </div>
     <div class="badge">🦙 llama3 · offline</div>
@@ -472,8 +508,8 @@
 
   <div id="chatArea">
     <div class="welcome" id="welcome">
-      <div class="icon">🗄️</div>
-      <h2>Ask your Oracle Database</h2>
+      <div class="icon">🪙</div>
+      <h2>QueryPrime · AI Database Chat</h2>
       <p>Type a question in plain English and the AI will generate SQL, run it, and show you the results — all offline.</p>
       <div class="suggestions">
         <button class="suggestion-btn" onclick="suggest(this)">Show all tables</button>
@@ -581,7 +617,7 @@
     const div = document.createElement('div');
     div.className = `msg ${role}`;
     div.innerHTML = `
-      <div class="avatar">${role === 'user' ? '👤' : '🔥'}</div>
+      <div class="avatar">${role === 'user' ? '👤' : '🪙'}</div>
       <div class="bubble">${escHtml(text)}</div>
     `;
     area.appendChild(div);
@@ -641,11 +677,11 @@
           </div>`;
       }
     } else if (data.sql && !data.error) {
-      content += `<div style="color:#64748b; font-size:13px; margin-top:8px;">ℹ️ No rows returned.</div>`;
+      content += `<div style="color:#5a5f72; font-size:13px; margin-top:8px;">ℹ️ No rows returned.</div>`;
     }
 
     div.innerHTML = `
-      <div class="avatar">🔥</div>
+      <div class="avatar">🪙</div>
       <div class="bubble">${content}</div>
     `;
     area.appendChild(div);
@@ -660,7 +696,7 @@
     div.className = 'msg ai';
     div.id = id;
     div.innerHTML = `
-      <div class="avatar">🔥</div>
+      <div class="avatar">🪙</div>
       <div class="bubble">
         <div class="thinking">
           Thinking
@@ -694,8 +730,8 @@
     const area = document.getElementById('chatArea');
     area.innerHTML = `
       <div class="welcome" id="welcome">
-        <div class="icon">🗄️</div>
-        <h2>Ask your Oracle Database</h2>
+        <div class="icon">🪙</div>
+        <h2>QueryPrime · AI Database Chat</h2>
         <p>Type a question in plain English and the AI will generate SQL, run it, and show you the results — all offline.</p>
         <div class="suggestions">
           <button class="suggestion-btn" onclick="suggest(this)">Show all tables</button>

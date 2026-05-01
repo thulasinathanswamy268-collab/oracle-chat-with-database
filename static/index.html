@@ -461,8 +461,426 @@
       text-align: center;
     }
   </style>
+
+  <!-- ══ 3D VISUALS INJECTION v2 RED EDITION ══ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    /* 3D Background Canvas */
+    #three-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Particle overlay for data flow effect */
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    /* 3D Tilt Cards */
+    .tilt-card {
+      transform-style: preserve-3d;
+      transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .tilt-card:hover {
+      transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) translateZ(10px);
+    }
+
+    /* 3D Button press */
+    .btn-3d {
+      transform-style: preserve-3d;
+      transition: all 0.2s;
+      box-shadow: 0 4px 0 #1a0a0a, 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .btn-3d:active {
+      transform: translateY(4px);
+      box-shadow: 0 0 0 #1a0a0a, 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Floating animation for sidebar elements */
+    @keyframes float3d {
+      0%, 100% { transform: translateY(0px) translateZ(0); }
+      50% { transform: translateY(-6px) translateZ(20px); }
+    }
+    .float-3d {
+      animation: float3d 4s ease-in-out infinite;
+      transform-style: preserve-3d;
+    }
+
+    /* 3D Logo cube */
+    .logo-cube {
+      transform-style: preserve-3d;
+      animation: spinCube 8s linear infinite;
+    }
+    @keyframes spinCube {
+      0% { transform: rotateX(0deg) rotateY(0deg); }
+      100% { transform: rotateX(360deg) rotateY(360deg); }
+    }
+
+    /* Glowing border effect - RED */
+    .glow-border {
+      position: relative;
+    }
+    .glow-border::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(200,50,50,0.4), transparent, rgba(180,40,40,0.4));
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .glow-border:hover::before {
+      opacity: 1;
+    }
+
+    /* 3D Perspective container */
+    .perspective-container {
+      perspective: 1200px;
+      transform-style: preserve-3d;
+    }
+
+    /* Depth layers for chat */
+    .depth-layer-1 { transform: translateZ(30px); }
+    .depth-layer-2 { transform: translateZ(60px); }
+    .depth-layer-3 { transform: translateZ(90px); }
+
+    /* Holographic shimmer - RED TINTED */
+    @keyframes holoShimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    .holo-text {
+      background: linear-gradient(90deg, #c85050, #d4d8e4, #c85050, #e8a0a0);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: holoShimmer 3s linear infinite;
+    }
+
+    /* 3D Table rows */
+    tr {
+      transition: transform 0.2s, background 0.2s;
+      transform-style: preserve-3d;
+    }
+    tr:hover {
+      transform: translateX(4px) translateZ(10px);
+    }
+
+    /* Message bubble 3D depth */
+    .msg {
+      transform-style: preserve-3d;
+    }
+    .bubble {
+      transform-style: preserve-3d;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .bubble:hover {
+      transform: translateZ(20px) scale(1.01);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+
+    /* Status dot 3D pulse - RED */
+    .status-dot {
+      box-shadow: 0 0 10px rgba(200,80,80,0.6);
+      transform-style: preserve-3d;
+    }
+
+    /* Input area 3D focus - RED GLOW */
+    .input-row {
+      transform-style: preserve-3d;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .input-row:focus-within {
+      transform: translateZ(10px);
+      box-shadow: 0 8px 32px rgba(200,80,80,0.2), 0 0 0 1px rgba(200,80,80,0.3);
+    }
+
+    /* Suggestion buttons 3D - RED HOVER */
+    .suggestion-btn {
+      transform-style: preserve-3d;
+      transition: all 0.3s;
+      box-shadow: 0 2px 0 #1a0a0a;
+    }
+    .suggestion-btn:hover {
+      transform: translateY(-2px) translateZ(10px);
+      box-shadow: 0 6px 0 #1a0a0a, 0 10px 20px rgba(200,60,60,0.3);
+      border-color: rgba(200,80,80,0.5);
+    }
+    .suggestion-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 0 0 #1a0a0a;
+    }
+
+    /* Welcome screen 3D elements */
+    .welcome .icon {
+      transform-style: preserve-3d;
+      animation: float3d 3s ease-in-out infinite;
+      text-shadow: 0 10px 30px rgba(200,60,60,0.3);
+    }
+
+    /* SQL block 3D - RED ACCENT */
+    .sql-block {
+      transform-style: preserve-3d;
+      transition: transform 0.3s;
+    }
+    .sql-block:hover {
+      transform: translateZ(15px);
+      box-shadow: 0 0 30px rgba(200,60,60,0.1);
+    }
+
+    /* Results table 3D container */
+    .table-wrap {
+      transform-style: preserve-3d;
+      transition: transform 0.3s;
+    }
+    .table-wrap:hover {
+      transform: translateZ(10px);
+    }
+
+    /* Loading ring 3D - RED */
+    .loader-3d {
+      position: fixed;
+      inset: 0;
+      background: #0a0a0e;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .loader-ring-3d {
+      width: 60px;
+      height: 60px;
+      border: 2px solid transparent;
+      border-top-color: #c85050;
+      border-right-color: rgba(200,80,80,0.3);
+      border-radius: 50%;
+      animation: spin3d 1s linear infinite;
+      transform-style: preserve-3d;
+      box-shadow: 0 0 30px rgba(200,80,80,0.4);
+    }
+    @keyframes spin3d {
+      to { transform: rotateX(360deg) rotateY(360deg); }
+    }
+
+    /* Ensure content stays above 3D canvas */
+    .sidebar, .main {
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Avatar 3D - RED GLOW ON AI */
+    .avatar {
+      transform-style: preserve-3d;
+      transition: transform 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .ai .avatar {
+      box-shadow: 0 0 20px rgba(200,80,80,0.3);
+    }
+    .avatar:hover {
+      transform: translateZ(30px) scale(1.1);
+    }
+
+    /* Stat cards 3D - RED HOVER */
+    .stat {
+      transform-style: preserve-3d;
+      transition: all 0.3s;
+    }
+    .stat:hover {
+      transform: translateZ(20px) translateY(-4px);
+      box-shadow: 0 8px 24px rgba(200,60,60,0.2);
+      border-color: rgba(200,80,80,0.3);
+    }
+
+    /* Schema box 3D glow - RED */
+    #schemaBox {
+      transform-style: preserve-3d;
+      transition: all 0.3s;
+    }
+    #schemaBox:hover {
+      transform: translateZ(10px);
+      box-shadow: 0 8px 32px rgba(200,60,60,0.15);
+    }
+
+    /* Custom cursor for 3D feel - RED */
+    .cursor-3d {
+      width: 8px;
+      height: 8px;
+      background: #e06060;
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 99999;
+      box-shadow: 0 0 15px rgba(224,96,96,0.9);
+      transition: transform 0.1s;
+    }
+    .cursor-ring-3d {
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(224,96,96,0.4);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 99998;
+      transition: transform 0.15s, width 0.3s, height 0.3s;
+    }
+
+    /* RED ACCENT ENHANCEMENTS */
+    .topbar h2 {
+      background: linear-gradient(90deg, #d4d8e4, #c85050, #9aa0b4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome h2 {
+      background: linear-gradient(120deg, #dde1ec, #c87070, #9aa0b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat .val {
+      background: linear-gradient(135deg, #d4d8e4, #c85050, #9aa0b4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .sql-header .lang {
+      background: linear-gradient(90deg, #c85050, #e8a0a0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, #c8cdd8, #c85050);
+      box-shadow: 0 4px 15px rgba(200,80,80,0.3);
+    }
+    .send-btn:hover {
+      box-shadow: 0 6px 25px rgba(200,80,80,0.5);
+      opacity: 1;
+    }
+
+    .logo-icon {
+      background: linear-gradient(135deg, #c8cdd8, #c85050);
+      box-shadow: 0 2px 12px rgba(200,80,80,0.25);
+    }
+
+    .btn-clear:hover {
+      background: linear-gradient(135deg, #2a1a1a, #1e0e0e);
+      color: #e8a0a0;
+      border-color: #c85050;
+    }
+
+    /* Error msg enhanced */
+    .error-msg {
+      border: 1px solid #c85050;
+      box-shadow: 0 0 20px rgba(200,80,80,0.15);
+    }
+
+    /* 3D Volumetric glow behind main content */
+    .main::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(200,60,60,0.08) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    /* Sidebar red accent line */
+    .sidebar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(180deg, transparent, rgba(200,80,80,0.3), transparent);
+    }
+
+    /* Thinking dots red */
+    .dots span {
+      background: linear-gradient(135deg, #c85050, #e8a0a0);
+    }
+
+    /* Badge red glow */
+    .badge {
+      border: 1px solid rgba(200,80,80,0.3);
+      box-shadow: 0 0 10px rgba(200,80,80,0.1);
+    }
+
+    /* Copy button red hover */
+    .copy-btn:hover {
+      background: rgba(200,80,80,0.2);
+      color: #e8a0a0;
+    }
+
+    /* Results count red */
+    .results-count {
+      background: rgba(200,80,80,0.15);
+      color: #e8a0a0;
+    }
+
+    /* Table header red accent */
+    th {
+      border-bottom: 1px solid rgba(200,80,80,0.2);
+    }
+
+    /* Scrollbar red tint */
+    ::-webkit-scrollbar-thumb {
+      background: #3a2020;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #c85050;
+    }
+  </style>
+<base target="_blank">
+<base target="_blank">
 </head>
 <body>
+
+  <!-- 3D Background Layer -->
+  <canvas id="three-canvas"></canvas>
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- 3D Custom Cursor -->
+  <div class="cursor-3d" id="cursor-dot"></div>
+  <div class="cursor-ring-3d" id="cursor-ring"></div>
+
+  <!-- 3D Loading Screen -->
+  <div id="loader-3d" class="loader-3d">
+    <div class="loader-ring-3d mb-6"></div>
+    <p style="color: #c8cdd8; font-family: 'Courier New', monospace; letter-spacing: 0.2em;">INITIALIZING 3D ENGINE...</p>
+  </div>
+
 
 <!-- ══ SIDEBAR ══ -->
 <div class="sidebar">
@@ -755,6 +1173,388 @@
 
   // Init
   loadSchema();
-</script>
+
+
+  // ═══════════════════════════════════════════
+  // 3D VISUALS ENGINE v2 - RED EDITION
+  // ═══════════════════════════════════════════
+
+  // ── Three.js 3D Scene ──
+  const scene3D = new THREE.Scene();
+  const camera3D = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer3D = new THREE.WebGLRenderer({ 
+    canvas: document.getElementById('three-canvas'), 
+    alpha: true, 
+    antialias: true 
+  });
+  renderer3D.setSize(window.innerWidth, window.innerHeight);
+  renderer3D.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  camera3D.position.z = 6;
+
+  // Create floating data crystals - RED THEME
+  const crystals = [];
+  const crystalGeometries = [
+    new THREE.OctahedronGeometry(0.4, 0),
+    new THREE.IcosahedronGeometry(0.35, 0),
+    new THREE.TetrahedronGeometry(0.4, 0),
+    new THREE.DodecahedronGeometry(0.3, 0),
+    new THREE.BoxGeometry(0.3, 0.3, 0.3)
+  ];
+
+  // Red wireframe material
+  const wireMat = new THREE.MeshBasicMaterial({
+    color: 0xc85050,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.15
+  });
+
+  // Dark red solid material
+  const solidMat = new THREE.MeshPhongMaterial({
+    color: 0x2a1010,
+    shininess: 100,
+    specular: 0xc85050,
+    transparent: true,
+    opacity: 0.04
+  });
+
+  // Glowing red core material
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: 0xff3333,
+    transparent: true,
+    opacity: 0.08
+  });
+
+  // Create data crystal field
+  for (let i = 0; i < 25; i++) {
+    const geo = crystalGeometries[Math.floor(Math.random() * crystalGeometries.length)];
+    let mat;
+    const rand = Math.random();
+    if (rand > 0.7) mat = wireMat;
+    else if (rand > 0.4) mat = solidMat;
+    else mat = glowMat;
+
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.x = (Math.random() - 0.5) * 18;
+    mesh.position.y = (Math.random() - 0.5) * 14;
+    mesh.position.z = (Math.random() - 0.5) * 10 - 3;
+    mesh.userData = {
+      rotX: (Math.random() - 0.5) * 0.01,
+      rotY: (Math.random() - 0.5) * 0.01,
+      floatSpeed: Math.random() * 0.002 + 0.0005,
+      floatOffset: Math.random() * Math.PI * 2,
+      originalY: mesh.position.y,
+      pulseSpeed: Math.random() * 0.02 + 0.01
+    };
+    crystals.push(mesh);
+    scene3D.add(mesh);
+  }
+
+  // Add connecting lines between nearby crystals - RED
+  const lineMat = new THREE.LineBasicMaterial({ 
+    color: 0x8a3030, 
+    transparent: true, 
+    opacity: 0.1 
+  });
+
+  const connections = [];
+  for (let i = 0; i < crystals.length; i++) {
+    for (let j = i + 1; j < crystals.length; j++) {
+      const dist = crystals[i].position.distanceTo(crystals[j].position);
+      if (dist < 5) {
+        const points = [crystals[i].position, crystals[j].position];
+        const geo = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geo, lineMat);
+        connections.push({ line, meshA: crystals[i], meshB: crystals[j] });
+        scene3D.add(line);
+      }
+    }
+  }
+
+  // RED Lighting setup
+  const ambientLight3D = new THREE.AmbientLight(0xffffff, 0.3);
+  scene3D.add(ambientLight3D);
+
+  const pointLight1 = new THREE.PointLight(0xc85050, 1.2, 60);
+  pointLight1.position.set(5, 5, 5);
+  scene3D.add(pointLight1);
+
+  const pointLight2 = new THREE.PointLight(0xff6666, 0.6, 60);
+  pointLight2.position.set(-5, -5, 5);
+  scene3D.add(pointLight2);
+
+  const pointLight3 = new THREE.PointLight(0x8a3030, 0.8, 80);
+  pointLight3.position.set(0, 0, -5);
+  scene3D.add(pointLight3);
+
+  // Mouse tracking for parallax
+  let mouse3DX = 0, mouse3DY = 0;
+  let targetMouse3DX = 0, targetMouse3DY = 0;
+
+  document.addEventListener('mousemove', (e) => {
+    targetMouse3DX = (e.clientX / window.innerWidth) * 2 - 1;
+    targetMouse3DY = -(e.clientY / window.innerHeight) * 2 + 1;
+  });
+
+  // Animation loop
+  let time3D = 0;
+  function animate3D() {
+    requestAnimationFrame(animate3D);
+    time3D += 0.01;
+
+    // Smooth mouse follow
+    mouse3DX += (targetMouse3DX - mouse3DX) * 0.05;
+    mouse3DY += (targetMouse3DY - mouse3DY) * 0.05;
+
+    // Animate crystals with pulsing
+    crystals.forEach((crystal, i) => {
+      crystal.rotation.x += crystal.userData.rotX;
+      crystal.rotation.y += crystal.userData.rotY;
+      crystal.position.y = crystal.userData.originalY + 
+        Math.sin(time3D + crystal.userData.floatOffset) * 0.4;
+
+      // Pulse scale effect
+      const pulse = 1 + Math.sin(time3D * crystal.userData.pulseSpeed * 50) * 0.1;
+      crystal.scale.set(pulse, pulse, pulse);
+    });
+
+    // Update connection lines
+    connections.forEach(conn => {
+      const positions = conn.line.geometry.attributes.position.array;
+      positions[0] = conn.meshA.position.x;
+      positions[1] = conn.meshA.position.y;
+      positions[2] = conn.meshA.position.z;
+      positions[3] = conn.meshB.position.x;
+      positions[4] = conn.meshB.position.y;
+      positions[5] = conn.meshB.position.z;
+      conn.line.geometry.attributes.position.needsUpdate = true;
+    });
+
+    // Camera parallax with depth
+    camera3D.position.x += (mouse3DX * 1.0 - camera3D.position.x) * 0.03;
+    camera3D.position.y += (mouse3DY * 0.8 - camera3D.position.y) * 0.03;
+    camera3D.lookAt(scene3D.position);
+
+    renderer3D.render(scene3D, camera3D);
+  }
+  animate3D();
+
+  // ── Particle Canvas (Data Flow) - RED EDITION ──
+  const pCanvas = document.getElementById('particle-canvas');
+  const pCtx = pCanvas.getContext('2d');
+  pCanvas.width = window.innerWidth;
+  pCanvas.height = window.innerHeight;
+
+  const dataParticles = [];
+  const particleChars = ['0','1','∿','◊','●','◆','×','+','#','@'];
+  const particleColors = [
+    'rgba(200,80,80,',
+    'rgba(180,60,60,',
+    'rgba(220,100,100,',
+    'rgba(160,50,50,',
+    'rgba(200,205,216,'
+  ];
+
+  for (let i = 0; i < 100; i++) {
+    dataParticles.push({
+      x: Math.random() * pCanvas.width,
+      y: Math.random() * pCanvas.height,
+      size: Math.random() * 2 + 0.5,
+      speedX: (Math.random() - 0.5) * 0.5,
+      speedY: (Math.random() - 0.5) * 0.5 - 0.3,
+      opacity: Math.random() * 0.5 + 0.1,
+      char: particleChars[Math.floor(Math.random() * particleChars.length)],
+      colorBase: particleColors[Math.floor(Math.random() * particleColors.length)],
+      pulse: Math.random() * Math.PI * 2
+    });
+  }
+
+  function animateParticles() {
+    pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+    pCtx.font = '11px monospace';
+
+    dataParticles.forEach(p => {
+      p.x += p.speedX;
+      p.y += p.speedY;
+      p.pulse += 0.02;
+
+      if (p.x < 0) p.x = pCanvas.width;
+      if (p.x > pCanvas.width) p.x = 0;
+      if (p.y < 0) p.y = pCanvas.height;
+      if (p.y > pCanvas.height) p.y = 0;
+
+      const pulseOpacity = p.opacity * (0.7 + Math.sin(p.pulse) * 0.3);
+      pCtx.fillStyle = p.colorBase + pulseOpacity + ')';
+      pCtx.fillText(p.char, p.x, p.y);
+    });
+
+    requestAnimationFrame(animateParticles);
+  }
+  animateParticles();
+
+  // ── 3D Custom Cursor - RED ──
+  const cursorDot = document.getElementById('cursor-dot');
+  const cursorRing = document.getElementById('cursor-ring');
+
+  document.addEventListener('mousemove', (e) => {
+    cursorDot.style.left = e.clientX + 'px';
+    cursorDot.style.top = e.clientY + 'px';
+    cursorRing.style.left = e.clientX + 'px';
+    cursorRing.style.top = e.clientY + 'px';
+  });
+
+  document.querySelectorAll('a, button, .suggestion-btn, .stat, .tilt-card, .copy-btn').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursorRing.style.transform = 'translate(-50%, -50%) scale(1.8)';
+      cursorRing.style.borderColor = 'rgba(224,96,96,0.9)';
+      cursorRing.style.boxShadow = '0 0 30px rgba(224,96,96,0.5)';
+      cursorDot.style.transform = 'translate(-50%, -50%) scale(1.5)';
+      cursorDot.style.background = '#ff4444';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursorRing.style.transform = 'translate(-50%, -50%) scale(1)';
+      cursorRing.style.borderColor = 'rgba(224,96,96,0.4)';
+      cursorRing.style.boxShadow = 'none';
+      cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
+      cursorDot.style.background = '#e06060';
+    });
+  });
+
+  // ── 3D Tilt Effect on Cards ──
+  document.querySelectorAll('.stat, .suggestion-btn, .menu-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = (y - centerY) / 15;
+      const rotateY = (centerX - x) / 15;
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(25px)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+    });
+  });
+
+  // ── Loading Screen - RED ──
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const loader = document.getElementById('loader-3d');
+      loader.style.transition = 'opacity 1s ease';
+      loader.style.opacity = '0';
+      setTimeout(() => loader.style.display = 'none', 1000);
+    }, 1500);
+  });
+
+  // ── Resize Handler ──
+  window.addEventListener('resize', () => {
+    camera3D.aspect = window.innerWidth / window.innerHeight;
+    camera3D.updateProjectionMatrix();
+    renderer3D.setSize(window.innerWidth, window.innerHeight);
+    pCanvas.width = window.innerWidth;
+    pCanvas.height = window.innerHeight;
+  });
+
+  // ── 3D Entrance Animation for Messages - RED GLOW ──
+  const originalAddMessage = addMessage;
+  addMessage = function(role, text) {
+    const area = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    div.style.opacity = '0';
+    div.style.transform = 'translateY(40px) translateZ(-80px)';
+    div.innerHTML = `
+      <div class="avatar">${role === 'user' ? '👤' : '🪙'}</div>
+      <div class="bubble">${escHtml(text)}</div>
+    `;
+    area.appendChild(div);
+    area.scrollTop = 999999;
+
+    // Animate in with 3D effect and red glow for AI
+    requestAnimationFrame(() => {
+      div.style.transition = 'all 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
+      div.style.opacity = '1';
+      div.style.transform = 'translateY(0) translateZ(0)';
+      if (role === 'ai') {
+        div.querySelector('.bubble').style.boxShadow = '0 0 30px rgba(200,80,80,0.15)';
+      }
+    });
+
+    return div;
+  };
+
+  // ── Enhanced AI Message with Red Accents ──
+  const originalAddAIMessage = addAIMessage;
+  addAIMessage = function(data) {
+    const area = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = 'msg ai';
+    div.style.opacity = '0';
+    div.style.transform = 'translateY(40px) translateZ(-80px)';
+
+    let content = '';
+
+    if (data.error) {
+      content += `<div class="error-msg">${escHtml(data.error)}</div>`;
+    }
+
+    if (data.explanation) {
+      content += `<p>${escHtml(data.explanation)}</p>`;
+    }
+
+    if (data.sql) {
+      content += `
+        <div class="sql-block">
+          <div class="sql-header">
+            <span class="lang">SQL</span>
+            <button class="copy-btn" onclick="copySQL(this)">📋 Copy</button>
+          </div>
+          <div class="sql-code">${escHtml(data.sql)}</div>
+        </div>
+      `;
+    }
+
+    if (data.results && data.results.length > 0) {
+      const isError = data.results[0]?.error;
+      if (isError) {
+        content += `<div class="error-msg">⚠️ ${escHtml(data.results[0].error)}</div>`;
+      } else {
+        const rows = data.results;
+        const cols = Object.keys(rows[0]);
+        content += `
+          <div class="results-block">
+            <div class="results-label">
+              📊 Results
+              <span class="results-count">${rows.length} row${rows.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr>${cols.map(c => `<th>${escHtml(c)}</th>`).join('')}</tr></thead>
+                <tbody>
+                  ${rows.map(r => `<tr>${cols.map(c => `<td>${escHtml(String(r[c] ?? ''))}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>`;
+      }
+    } else if (data.sql && !data.error) {
+      content += `<div style="color:#5a5f72; font-size:13px; margin-top:8px;">ℹ️ No rows returned.</div>`;
+    }
+
+    div.innerHTML = `
+      <div class="avatar">🪙</div>
+      <div class="bubble">${content}</div>
+    `;
+    area.appendChild(div);
+    area.scrollTop = 999999;
+
+    requestAnimationFrame(() => {
+      div.style.transition = 'all 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
+      div.style.opacity = '1';
+      div.style.transform = 'translateY(0) translateZ(0)';
+      div.querySelector('.bubble').style.boxShadow = '0 0 30px rgba(200,80,80,0.12)';
+    });
+  };</script>
 </body>
 </html>
